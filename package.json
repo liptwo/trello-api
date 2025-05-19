@@ -1,0 +1,28 @@
+{
+  "name": "trello-api",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "liptwo mern stak",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/liptwo/trello-api.git"
+  },
+  "keywords": [
+    "trello-api",
+    "javascript",
+    "trello"
+  ],
+  "author": "liptwo <vh>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liptwo/trello-api/issues"
+  },
+  "homepage": "https://github.com/liptwo/trello-api#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
