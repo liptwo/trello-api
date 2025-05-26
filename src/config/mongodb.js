@@ -25,6 +25,6 @@ export const GET_DB = () => {
 }
 
 export const EXIT_DB = async () => {
-  console.log('code chay hong')
+  console.log('Close database')
   await clientDB.close()
 }
