@@ -10,7 +10,7 @@ Router.route('/')
   })
   .post((req, res) => {
     res.status(StatusCodes.CREATED).json({
-      message: 'Note: Board created'
+      message: 'Note: Api new Board created'
     })
   })
 export const boardRoutes = Router
