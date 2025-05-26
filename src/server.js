@@ -1,24 +1,21 @@
 /* eslint-disable no-console */
 import express from 'express'
-import { connectToDatabase, GET_DB, EXIT_DB } from '~/config/mongodb'
+import { connectToDatabase, EXIT_DB } from '~/config/mongodb'
 import exitHook from 'async-exit-hook'
 import { ENV } from './config/environment'
+import { APIs_V1 } from '~/routes/v1'
 
 const START_SEVER = () => {
   const app = express()
 
+  app.use('/v1', APIs_V1)
+  // app.use(express.urlencoded({ extended: true }))
+
   const hostname = 'localhost'
   const port = 8017
 
-  app.get('/', async (req, res) => {
-    try {
-      const collections = await GET_DB().listCollections().toArray()
-      console.log(collections)
-      res.end('<h1>Hello World!</h1><hr>')
-    } catch (error) {
-      console.error(error)
-      res.status(500).end('<h1>Database Error</h1>')
-    }
+  app.get('/', (req, res) => {
+    res.end('<h1>Hello World!</h1><hr>')
   })
 
   app.listen(port, hostname, () => {
