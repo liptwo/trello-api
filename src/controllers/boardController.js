@@ -1,25 +1,19 @@
 /* eslint-disable no-console */
 
 import { StatusCodes } from 'http-status-codes'
-import ApiError from '~/utils/ApiError'
+import { boardService } from '~/services/boardService'
+// import ApiError from '~/utils/ApiError'
 
 
 const createNew = async (req, res, next) => {
 
   try {
-    // console.log(req.body)
-
-    // throw new ApiError(StatusCodes.BAD_GATEWAY, 'Lỗi')
     //Điều hướng dữ liệu sang tầng service
+    const createdBoard = await boardService.createNew(req.body)
 
     //Có kết quả thì trả về client
-    res.status(StatusCodes.CREATED).json({
-      message: 'Post From Controller Board created'
-    })
-  } catch (error) {
-    // console.log(error)
-    next(error)
-  }
+    res.status(StatusCodes.CREATED).json(createdBoard)
+  } catch (error) { next(error) }
 }
 
 

@@ -31,10 +31,6 @@ const createNew = async (req, res, next) => {
   } catch (error) {
     // chuyển về nơi hiển thị lỗi tập trung
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
-    // console.log(error)
-    // res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-    //   error: new Error(error).message
-    // })
   }
 }
 
