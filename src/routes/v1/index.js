@@ -1,7 +1,7 @@
 import express from 'express'
 const Router = express.Router()
 import { StatusCodes } from 'http-status-codes'
-import { boardRoutes } from './boardRoutes.js'
+import { boardRoute } from './boardRoute.js'
 
 
 // api v1 status
@@ -16,5 +16,5 @@ Router.get('/status', (req, res) => {
 })
 
 /** Board APIs */
-Router.use('/boards', boardRoutes)
+Router.use('/boards', boardRoute)
 export const APIs_V1 = Router
