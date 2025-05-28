@@ -4,21 +4,25 @@ import { connectToDatabase, EXIT_DB } from '~/config/mongodb'
 import exitHook from 'async-exit-hook'
 import { ENV } from './config/environment'
 import { APIs_V1 } from '~/routes/v1'
+import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 
 const START_SEVER = () => {
   const app = express()
 
+  app.use(express.json())
+
   app.use('/v1', APIs_V1)
   // app.use(express.urlencoded({ extended: true }))
-
-  const hostname = 'localhost'
-  const port = 8017
 
   app.get('/', (req, res) => {
     res.end('<h1>Hello World!</h1><hr>')
   })
 
-  app.listen(port, hostname, () => {
+  // midleware xử lý lỗi tập trung
+  app.use(errorHandlingMiddleware)
+
+
+  app.listen(ENV.APP_PORT, ENV.APP_HOST, () => {
     console.log(`Hello Liptwo, I am running at http://${ENV.APP_HOST}:${ENV.APP_PORT}/`)
   })
 
@@ -33,7 +37,6 @@ const START_SEVER = () => {
     console.log('1. Connecting to database...')
     await connectToDatabase() // Make sure to await this
     console.log('2. Successfully connected to database!')
-
     START_SEVER()
   } catch (error) {
     console.error('Failed to start server:', error)
