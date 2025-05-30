@@ -37,13 +37,25 @@ const findOneById = async( id ) => {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
       _id: new ObjectId(id)
     })
-    console.log('result: ', result)
+    // console.log('result: ', result)
     return result
   } catch (error) { throw new Error(error) }
 }
+
+// Query tổng hợp (aggregate) lấy toàn bộ columns, cards thuộc về boards. sẽ có update sau,
+const getDetails = async( id ) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
+      _id: new ObjectId(id)
+    })
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
   createNew,
-  findOneById
+  findOneById,
+  getDetails
 }
