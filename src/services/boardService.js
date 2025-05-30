@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { StatusCodes } from 'http-status-codes'
+import { cloneDeep } from 'lodash'
 import { boardModel } from '~/models/boardModel'
 import ApiError from '~/utils/ApiError'
 // import ApiError from '~/utils/ApiError'
@@ -27,8 +28,8 @@ const createNew = async ( reqBody ) => {
     // bắn email, notification về cho admin khi có 1 board mới được tạo.. v.v
 
 
-    return getNewBoard 
-  } catch (error) { throw error } 
+    return getNewBoard
+  } catch (error) { throw error }
 }
 
 const getDetails = async ( boardId ) => {
@@ -36,7 +37,20 @@ const getDetails = async ( boardId ) => {
     const boardDetail = await boardModel.getDetails( boardId )
     if ( !boardDetail ) { throw new ApiError( StatusCodes.NOT_FOUND, 'Board Not Found!') }
 
-    return boardDetail
+    //b1: cloneDeep tạo ra board mới không ảnh hưởng mảng cũ tùy mục đích
+    const resBoard = cloneDeep(boardDetail)
+    //b2: đưa card về đúng columns
+    resBoard.columns.forEach( column => {
+      // cách 1 convert ObjectID về string bằng toString của javascript
+      // column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
+      // cách 2 equal được mongodb support hàm equals cho ObjectID
+      column.cards = resBoard.cards.filter(card => card.columnId.equals(column._id))
+    }
+    )
+    //B3: xóa mảng card khỏi ngang hàng
+    delete resBoard.cards
+
+    return resBoard
   } catch (error) { throw error }
 }
 export const boardService = {

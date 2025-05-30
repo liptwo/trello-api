@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
+import { BOARD_TYPES } from '~/utils/constants'
 
 
 // dù fe có validate dữ liệu rồi nhưng be vẫn phải cần validate
@@ -20,7 +21,8 @@ const createNew = async (req, res, next) => {
       'string.max' : 'Description max 256 chars',
       'string.empty' : 'Description not allow to be empty',
       'string.trim' : 'Description must not have leading and whitespace'
-    })
+    }),
+    type: Joi.boolean().valid(BOARD_TYPES.PUBLIC, BOARD_TYPES.PRIVITE).required()
   })
 
   try {
