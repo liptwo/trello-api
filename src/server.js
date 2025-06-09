@@ -25,10 +25,16 @@ const START_SEVER = () => {
   // midleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
+  if (ENV.BUILD_MODE === 'production') {
+    app.listen(process.env.PORT, () => {
+      console.log(`Hello Liptwo, I on Production am running at ${process.env.PORT}/`)
+    })
+  } else {
+    app.listen(ENV.LOCAL_DEV_APP_PORT, ENV.LOCAL_DEV_APP_HOST, () => {
+      console.log(`Hello Liptwo, I am running at http://${ENV.LOCAL_DEV_APP_HOST}:${ENV.LOCAL_DEV_APP_PORT}/`)
+    })
+  }
 
-  app.listen(ENV.APP_PORT, ENV.APP_HOST, () => {
-    console.log(`Hello Liptwo, I am running at http://${ENV.APP_HOST}:${ENV.APP_PORT}/`)
-  })
 
   exitHook(() => {
     console.log('Exit db')
