@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { boardRoute } from './boardRoute.js'
 import { columnRoute } from './columnRoute.js'
 import { cardRoute } from './cardRoute.js'
+import { userRoute } from './userRoute.js'
 
 
 // api v1 status
@@ -25,5 +26,8 @@ Router.use('/columns', columnRoute)
 
 /** Board APIs */
 Router.use('/cards', cardRoute)
+
+/** User APIs */
+Router.use('/users', userRoute)
 
 export const APIs_V1 = Router
