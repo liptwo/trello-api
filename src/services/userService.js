@@ -46,12 +46,12 @@ const createNew = async ( reqBody ) => {
 const verifyAccount = async (reqBody) => {
   try {
     // Query user trong database
-    const existUser = await userModel.findOneByEmail(reqBody.email)
 
+    const existUser = await userModel.findOneByEmail(reqBody.email)
     // Các bước kiểm tra cần thiết
     if ( !existUser ) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
     if ( existUser.isActive ) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Account is already active!')
-    if ( existUser.token !== reqBody.token ) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Token is invalid!')
+    if ( existUser.verifyToken !== reqBody.token ) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Token is invalid!')
 
     // Nếu như mọi thứ ok thì chúng ta bắt đầu update lại thông tin của thằng user để verify account
     const updateData = {
@@ -70,7 +70,7 @@ const login = async (reqBody) => {
     const existUser = await userModel.findOneByEmail(reqBody.email)
 
     // Các bước kiểm tra cần thiết
-    if ( !existUser ) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    if ( !existUser ) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your email or Password is incorrect!')
     if ( !existUser.isActive ) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Account isn\'t active!')
     if ( !bcryptjs.compareSync(reqBody.password, existUser.password)) {
       throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your email or Password is incorrect!')
@@ -86,22 +86,48 @@ const login = async (reqBody) => {
     const accessToken = await JwtProvider.generationToken(
       userInfo,
       ENV.ACCESS_TOKEN_SECRET_SIGNATURE,
+      // 5 // 5 giây
       ENV.ACCESS_TOKEN_LIFE
     )
 
     const refreshToken = await JwtProvider.generationToken(
       userInfo,
       ENV.REFRESH_TOKEN_SECRET_SIGNATURE,
+      // 15
       ENV.REFRESH_TOKEN_LIFE
     )
 
     // Trả về thông tin của user kèm theo 2 cái token vừa tạo ra
-    return { accessToken, refreshToken, ...pickUser(existUser)}
+    return { accessToken, refreshToken, ...pickUser(existUser) }
+  } catch (error) { throw error }
+}
+
+const refreshToken = async (clientRefreshToken) => {
+  try {
+    // Verify / giải mã cái refresh token xem có hợp lệ không
+    const refreshTokenDecoded = await JwtProvider.verifyToken(clientRefreshToken,
+      ENV.REFRESH_TOKEN_SECRET_SIGNATURE)
+
+    // Đoạn này vì chúng ta chỉ lưu những thông tin unique và cố định của user trong token rồi, vì vậy có thể
+    // lấy luôn từ decoded ra, tiết kiệm query vào DB đề lấy data mới.
+    const userInfo = {
+      _id: refreshTokenDecoded._id,
+      email: refreshTokenDecoded.email
+    }
+    // Tạo accessTokeg mới
+    const accessToken = await JwtProvider.generateToken(
+      userInfo,
+      ENV.ACCESS_TOKEN_SECRET_SIGNATURE,
+      // 5 // 5 giây để test accessToken hết hạn
+      ENV.ACCESS_TOKEN_LIFE // 1 tiếng
+    )
+    return { accessToken }
   } catch (error) { throw error }
 }
 
 export const userService = {
   createNew,
   verifyAccount,
-  login
+  login,
+  refreshToken
 }
