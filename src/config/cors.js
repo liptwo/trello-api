@@ -5,7 +5,7 @@ import { WHITELIST_DOMAINS } from '~/utils/constants'
 
 // cấu hình cors cho dự án thực tế
 export const corsOptions = {
-  orgin: function(origin, callback) {
+  origin: function(origin, callback) {
     // cho phép gọi api bằng postman trên môi trường dev
     // thông thường gọi postman thì cái origin là undefined
     // if (!origin && ENV.BUILD_MODE === 'dev') {
