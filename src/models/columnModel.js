@@ -48,7 +48,7 @@ const pushCardOrderIds = async( card ) => {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(card.columnId) },
       { $push: { cardOrderIds: new ObjectId(card._id) } },
-      { returnDocumnent: 'after' }
+      { returnDocument: 'after' }
     )
     return result
   } catch (error) { throw new Error(error) }
@@ -68,7 +68,7 @@ const update = async( columnId, updateData ) => {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(columnId) },
       { $set: updateData },
-      { returnDocumnent: 'after' }
+      { returnDocument: 'after' }
     )
     return result
   } catch (error) { throw new Error(error) }

@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
 import { ENV } from '~/config/environment'
 import { userModel } from '~/models/userModel'
+import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
 import { JwtProvider } from '~/providers/JwtProvider'
 import { notifyAdmin } from '~/providers/NodeMailer'
 import ApiError from '~/utils/ApiError'
@@ -124,10 +125,50 @@ const refreshToken = async (clientRefreshToken) => {
     return { accessToken }
   } catch (error) { throw error }
 }
+const update = async ( userId, reqBody, userAvataFile ) => {
+  try {
+    const existUser = await userModel.findOneById(userId)
+    // console.log('🚀 ~', existUser.updatedUser.value)
+    if ( !existUser ) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!')
+    if ( !existUser.isActive ) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Account isn\'t active!')
+    // console.log('🚀 ~ userService.js:139 ~ update ~ existUser.password:', existUser)
+    let updatedUser = {}
+    // Kiểm tra trường hợp thay đổi mật khẩu
+    if ( reqBody.new_password && reqBody.current_password ) {
+      // Kiểm tra mật khẩu hiện tại có đúng không
+      if (!bcryptjs.compareSync(reqBody.current_password, existUser.password)) {
+        throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Current password is incorrect!')
+      }
+      // Nếu đúng thì băm mật khẩu mới và cập nhật vào database
+      updatedUser = await userModel.update(existUser._id, {
+        password: bcryptjs.hashSync(reqBody.new_password, 8)
+      })
+
+    } else if ( userAvataFile ) {
+      // trường hợp avatar xử lý upload ảnh lên cloundinary
+      const uploadResult = await CloudinaryProvider.streamUpload(userAvataFile.buffer, 'users-trello')
+      console.log(uploadResult)
+
+      // lưu url của file ảnh vào database
+      updatedUser = await userModel.update(existUser._id, {
+        avatar: uploadResult.secure_url
+      })
+    } else {
+      // Nếu không có trường hợp đổi mật khẩu thì không cần băm
+      // console.log('🚀 ~ userService.js:151 ~ update ~ reqBody:', existUser._id)
+      updatedUser = await userModel.update(existUser._id, reqBody )
+      // console.log('🚀 ~ userService.js:88 ~ update ~ updatedUser:', updatedUser)
+    }
+    // console.log(updatedUser)
+    // console.log(updatedUser)
+    return pickUser(updatedUser.value)
+  } catch (error) { throw error }
+}
 
 export const userService = {
   createNew,
   verifyAccount,
   login,
-  refreshToken
+  refreshToken,
+  update
 }

@@ -5,6 +5,7 @@ import { boardRoute } from './boardRoute.js'
 import { columnRoute } from './columnRoute.js'
 import { cardRoute } from './cardRoute.js'
 import { userRoute } from './userRoute.js'
+import { invitationsRoute } from './invitationRoute.js'
 
 
 // api v1 status
@@ -29,5 +30,8 @@ Router.use('/cards', cardRoute)
 
 /** User APIs */
 Router.use('/users', userRoute)
+
+/** Invitations */
+Router.use('/invitations', invitationsRoute)
 
 export const APIs_V1 = Router

@@ -12,9 +12,17 @@ export const BOARD_TYPES = {
   PUBLIC:'public',
   PRIVITE:'private'
 }
-
 export const WEBSITE_DOMAIN = (ENV.BUILD_MODE === 'dev' ? ENV.WEBSITE_DOMAIN_DEVELOPMENT: ENV.WEBSITE_DOMAIN_PRODUCTION)
-
+export const DEFAULT_PAGE = 1
+export const DEFAULT_ITEMS_PER_PAGE = 10
+export const INVITATION_TYPES = {
+  LOBOARD_INVITATION: 'BOARD_INVITATION'
+}
+export const BOARD_INVITATION_STATUS = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
+}
 
 export const htmlContent = (verificationLink) => {
   return (`
