@@ -45,7 +45,6 @@ const findOneById = async( userId ) => {
     const result = await GET_DB().collection(USER_COLLECTION_NAME).findOne({
       _id: new ObjectId(userId)
     })
-    // console.log('result: ', result)
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -61,7 +60,7 @@ const findOneByEmail = async( emailValue ) => {
   } catch (error) { throw new Error(error) }
 }
 
-const update = async( columnId, updateData ) => {
+const update = async( userId, updateData ) => {
   try {
     Object.keys(updateData).forEach( fieldName => {
       if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
@@ -70,9 +69,9 @@ const update = async( columnId, updateData ) => {
     })
 
     const result = await GET_DB().collection(USER_COLLECTION_NAME).findOneAndUpdate(
-      { _id: new ObjectId(columnId) },
+      { _id: new ObjectId(userId) },
       { $set: updateData },
-      { returnDocumnent: 'after' }
+      { returnDocument: 'after' }
     )
     return result
   } catch (error) { throw new Error(error) }

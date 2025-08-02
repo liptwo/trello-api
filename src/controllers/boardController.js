@@ -9,10 +9,25 @@ const createNew = async (req, res, next) => {
 
   try {
     //Điều hướng dữ liệu sang tầng service
-    const createdBoard = await boardService.createNew(req.body)
+    const userId = req.jwtDecoded._id
+    const createdBoard = await boardService.createNew(req.body, userId)
 
     //Có kết quả thì trả về client
     res.status(StatusCodes.CREATED).json(createdBoard)
+  } catch (error) { next(error) }
+}
+const getAllBoards = async (req, res, next) => {
+
+  try {
+    const userId = req.jwtDecoded._id
+    //Điều hướng dữ liệu sang tầng service
+    const { page, itemsPerPage, q } = req.query
+    const queryFilters = q
+    console.log(q)
+    const results = await boardService.getAllBoards(userId, page, itemsPerPage, queryFilters)
+
+    //Có kết quả thì trả về client
+    res.status(StatusCodes.CREATED).json(results)
   } catch (error) { next(error) }
 }
 
@@ -31,7 +46,8 @@ const update = async (req, res, next) => {
   try {
     // console.log(req.body)
     const boardId = req.params.id
-    const updateBoard = await boardService.update(boardId, req.body)
+    const boardBg = req.file
+    const updateBoard = await boardService.update(boardId, req.body, boardBg)
 
     res.status(StatusCodes.OK).json(updateBoard)
   } catch (error) { next(error) }
@@ -47,5 +63,6 @@ export const boardController = {
   createNew,
   getDetails,
   update,
-  moveCardOutColumn
+  moveCardOutColumn,
+  getAllBoards
 }

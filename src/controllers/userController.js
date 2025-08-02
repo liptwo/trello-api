@@ -75,10 +75,23 @@ const refreshToken = async (req, res, next) => {
   } catch (error) { next(new ApiError(StatusCodes.FORBIDDEN, 'Please Sign In!'))}
 }
 
+const update = async (req, res, next) => {
+  try {
+    const userId = req.jwtDecoded._id
+    const userAvataFile = req.file
+    // console.log('avatar', userAvataFile)
+    const updateUser = await userService.update(userId, req.body, userAvataFile)
+    // console.log('🚀 ~ userController.js:82 ~ update ~ updateUser:', updateUser)
+    // res.cookie('accessToken', result.accessToken, {httpOnly: true, secure: true, sameSite: 'none', maxAge:ms('14 days') })
+    res.status(StatusCodes.OK).json(updateUser)
+  } catch (error) { next(error)}
+}
+
 export const userController = {
   createNew,
   verifyAccount,
   login,
   logout,
-  refreshToken
+  refreshToken,
+  update
 }

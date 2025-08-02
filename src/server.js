@@ -8,6 +8,11 @@ import { APIs_V1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'
 import { corsOptions } from '~/config/cors'
 import cookieParser from 'cookie-parser'
+// xử lý socket realtime với gói socket io
+import socketIo from 'socket.io'
+import http from 'http'
+import { inviteUserToBoardSocket } from './sockets/inviteUserToBoardSocket'
+
 
 const START_SEVER = () => {
   const app = express()
@@ -37,12 +42,21 @@ const START_SEVER = () => {
   // midleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
+  // tạo 1 server mới bọc app của expres để làm realtime với socket io
+  const server = http.createServer(app)
+  // khởi tạo biến io và cors
+  const io = socketIo(server, { cors: corsOptions })
+  io.on('connection', (socket) => {
+    inviteUserToBoardSocket(socket)
+  })
+
   if (ENV.BUILD_MODE === 'production') {
-    app.listen(process.env.PORT, () => {
+    // dùng sever.listen thay vì app.listen vì server đã bao gồm app và đã config socket io rồi 
+    server.listen(process.env.PORT, () => {
       console.log(`Hello Liptwo, I on Production am running at ${process.env.PORT}/`)
     })
   } else {
-    app.listen(ENV.LOCAL_DEV_APP_PORT, ENV.LOCAL_DEV_APP_HOST, () => {
+    server.listen(ENV.LOCAL_DEV_APP_PORT, ENV.LOCAL_DEV_APP_HOST, () => {
       console.log(`Hello Liptwo, I am running at http://${ENV.LOCAL_DEV_APP_HOST}:${ENV.LOCAL_DEV_APP_PORT}/`)
     })
   }
