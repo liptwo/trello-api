@@ -1,7 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
-import { ObjectId } from 'mongodb'
 import { boardModel } from '~/models/boardModel'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
@@ -39,12 +38,12 @@ const createNew = async ( reqBody, userId ) => {
     return getNewBoard
   } catch (error) { throw error }
 }
-const getAllBoards = async ( userId, page, itemsPerPages ) => {
+const getAllBoards = async ( userId, page, itemsPerPages, queryFilters ) => {
   try {
     // xử lý logic dữ liệu tùy đặc thù dự án
     if ( !page ) { page = DEFAULT_PAGE }
     if ( !itemsPerPages ) { itemsPerPages = DEFAULT_ITEMS_PER_PAGE }
-    const resultListBoard = await boardModel.getAllBoardsByUserID(userId, parseInt(page, 10), parseInt(itemsPerPages, 10))
+    const resultListBoard = await boardModel.getAllBoards(userId, parseInt(page, 10), parseInt(itemsPerPages, 10), queryFilters)
 
 
     // console.log(getNewBoard)

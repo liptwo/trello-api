@@ -3,6 +3,8 @@ import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { INVITATION_TYPES, BOARD_INVITATION_STATUS } from '~/utils/constants'
+import { userModel } from './userModel'
+import { boardModel } from './boardModel'
 
 // Define Collection (name & schema)
 const INVITATION_COLLECTION_NAME = 'invitations'
@@ -48,28 +50,28 @@ const createNewBoardInvitation = async (data) => {
       }
     }
     // Gọi insert vào DB
-    const createdInvitation = await GET_DB(). collection(INVITATION_COLLECTION_NAME).insertOne(newInvitationToAdd)
+    const createdInvitation = await GET_DB().collection(INVITATION_COLLECTION_NAME).insertOne(newInvitationToAdd)
     return createdInvitation
   } catch (error) { throw new Error(error) }
 }
 
 const findOneById = async (invitationId) => {
   try {
-    const result = await GET_DB(). collection(INVITATION_COLLECTION_NAME). findOne({ _id: new ObjectId(invitationId) })
+    const result = await GET_DB().collection(INVITATION_COLLECTION_NAME).findOne({ _id: new ObjectId(invitationId) })
     return result
   } catch (error) { throw new Error(error) }
 }
 const update = async (invitationId, updateData) => {
   try {
     // Lọc những field mà chúng ta không cho phép cập nhật linh tinh
-    Object.keys(updateData). forEach(fieldName => {
+    Object.keys(updateData).forEach(fieldName => {
       if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
         delete updateData [fieldName]
       }
     })
     // Đối với những dữ liệu liên quan ObjectId, biển đổi ở đây
     if (updateData.boardInvitation) {
-      updateData. boardInvitation = {
+      updateData.boardInvitation = {
         ... updateData.boardInvitation,
         boardId: new ObjectId(updateData.boardInvitation.boardId)
       }
@@ -80,12 +82,64 @@ const update = async (invitationId, updateData) => {
       { $set: updateData },
       { returnDocument: 'after' } // sẽ trả về kết quả mới sau khi cập nhật
     )
-    return result
+    // console.log(result)
+    return result.value
   } catch (error) { throw new Error(error) }
+}
+
+const findByUser = async (userId) => {
+  try {
+    const queryConditions = [
+      { inviteeId: new ObjectId(userId) },
+      { _destroy: false }
+    ]
+
+
+    const results = await GET_DB().collection(INVITATION_COLLECTION_NAME).aggregate([
+      { $match: { $and: queryConditions } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'inviterId',
+        foreignField: '_id',
+        as: 'inviter',
+        pipeline: [
+          { $project: {
+            'avatar': 1,
+            'displayName': 1,
+            '_id': 1
+          } }
+        ]
+      } },
+      { $lookup: {
+        from: userModel.USER_COLLECTION_NAME,
+        localField: 'inviteeId',
+        foreignField: '_id',
+        as: 'invitee',
+        pipeline: [
+          { $project: {
+            'avatar': 1,
+            'displayName': 1,
+            '_id': 1
+          } }
+        ]
+      } },
+      { $lookup: {
+        from: boardModel.BOARD_COLLECTION_NAME,
+        localField: 'boardInvitation.boardId',
+        foreignField: '_id',
+        as: 'board'
+      } }
+    ]).toArray()
+    // console.log('result model', results)
+    return results
+  } catch (error) {
+    throw new Error(error)
+  }
 }
 
 export const invitationModel = {
   createNewBoardInvitation,
   findOneById,
-  update
+  update,
+  findByUser
 }

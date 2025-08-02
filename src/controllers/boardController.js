@@ -21,8 +21,10 @@ const getAllBoards = async (req, res, next) => {
   try {
     const userId = req.jwtDecoded._id
     //Điều hướng dữ liệu sang tầng service
-    const { page, itemsPerPage } = req.query
-    const results = await boardService.getAllBoards(userId, page, itemsPerPage)
+    const { page, itemsPerPage, q } = req.query
+    const queryFilters = q
+    console.log(q)
+    const results = await boardService.getAllBoards(userId, page, itemsPerPage, queryFilters)
 
     //Có kết quả thì trả về client
     res.status(StatusCodes.CREATED).json(results)

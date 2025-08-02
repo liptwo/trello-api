@@ -60,7 +60,7 @@ const findOneById = async( id ) => {
     return result
   } catch (error) { throw new Error(error) }
 }
-const getAllBoardsByUserID = async( userId, page, itemsPerPage ) => {
+const getAllBoards = async( userId, page, itemsPerPage, queryFilters ) => {
   try {
 
     const queryCondtions = [
@@ -73,7 +73,18 @@ const getAllBoardsByUserID = async( userId, page, itemsPerPage ) => {
         { memberIds: { $all: [new ObjectId(userId)] } }
       ] }
     ]
+    // Xử lý query filter cho từng trường hợp
+    if ( queryFilters ) {
+      Object.keys(queryFilters).forEach( key => {
+        // queryFilters[key] ví vị key = title thì FE là q[title] phải thống nhất
+        // trường hợp phân biệt chữ hoa chữ thường
+        // queryCondtions.push({ [key]: { $regex: queryFilters[key] } })
 
+        // trường hợp không phân biệt chữ hoa chữ thường
+        queryCondtions.push({ [key]: { $regex: new RegExp(queryFilters[key], 'i') } })
+      })
+    }
+    console.log('queryCondtions', queryCondtions)
     const query = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
       { $match: { $and: queryCondtions } },
       // sort title của board theo a-z mặc định bị chữ b hoa đứng trước a thưofng theo chuẩn bảng mã ASCII
@@ -173,6 +184,7 @@ const pushColumnOrderIds = async( column ) => {
   } catch (error) { throw new Error(error) }
 }
 
+
 const update = async( boardId, updateData ) => {
   try {
     Object.keys(updateData).forEach( fieldName => {
@@ -204,6 +216,18 @@ const pullColumnOrderIds = async( column ) => {
   } catch (error) { throw new Error(error) }
 }
 
+
+const pushMembers = async( boardId, userId ) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(boardId) },
+      { $push: { memberIds: new ObjectId(userId) } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
@@ -213,5 +237,6 @@ export const boardModel = {
   pushColumnOrderIds,
   update,
   pullColumnOrderIds,
-  getAllBoardsByUserID
+  getAllBoards,
+  pushMembers
 }

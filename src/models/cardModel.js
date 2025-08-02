@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
+import { CARD_MEMBER_ACTIONS } from '~/utils/constants'
 import {
   EMAIL_RULE,
   EMAIL_RULE_MESSAGE,
@@ -94,6 +95,7 @@ const update = async (cardId, updateData) => {
     // console.log('updateData: ', updateData)
     if (updateData.columnId)
       updateData.columnId = new ObjectId(updateData.columnId)
+
     const result = await GET_DB()
       .collection(CARD_COLLECTION_NAME)
       .findOneAndUpdate(
@@ -101,6 +103,25 @@ const update = async (cardId, updateData) => {
         { $set: updateData },
         { returnDocument: 'after' }
       )
+    return result
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const updateOne = async (filter, updateData) => {
+  try {
+    Object.keys(updateData).forEach((fieldName) => {
+      if (['_id', 'createdAt'].includes(fieldName)) {
+        delete updateData[fieldName]
+      }
+    })
+    if (updateData.columnId)
+      updateData.columnId = new ObjectId(updateData.columnId)
+
+    const result = await GET_DB()
+      .collection(CARD_COLLECTION_NAME)
+      .updateOne(filter, updateData)
     return result
   } catch (error) {
     throw new Error(error)
@@ -146,12 +167,37 @@ const unshiftNewComment = async (cardId, commentData) => {
   }
 }
 
+
+const updateMembers = async (cardId, incomingMemberInfo) => {
+  try {
+    // Tạo ra một biến updateCondition ban đầu là rỗng
+    let updateCondition = {}
+    if (incomingMemberInfo.action === CARD_MEMBER_ACTIONS.ADD) {
+    // console. log('Trường hợp Add, dùng $push: ',incomingMemberInfo)
+      updateCondition = { $push: { memberIds: new ObjectId(incomingMemberInfo.userId) } }
+    }
+    if (incomingMemberInfo.action === CARD_MEMBER_ACTIONS.REMOVE) {
+    // console. log('Trường hợp Remove, dùng $pull: ', incomingMemberInfo)
+      updateCondition = { $pull: { memberIds: new ObjectId(incomingMemberInfo.userId) } }
+    }
+
+    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(cardId) },
+      updateCondition, // truyền cái updateCondition ở đây
+      { returnDocument: 'after' }
+    )
+    return result
+  }
+  catch (error) { throw new Error(error) }
+}
 export const cardModel = {
   CARD_COLLECTION_NAME,
   CARD_COLLECTION_SCHEMA,
   createNew,
   findOneById,
   update,
+  updateOne,
   deleteManyByColumnId,
-  unshiftNewComment
+  unshiftNewComment,
+  updateMembers
 }
